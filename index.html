@@ -1485,6 +1485,8 @@ const SND=(function(){ let ac=null, master, windG, windF, waveG, waveF, chantG, 
 /* ============================================================
    メインループ
    ============================================================ */
+/* 世界さんぽディフェンス（?td のときだけ。defence-castle/world/ のゲームが画面とカメラを受け持つ） */
+const TD=/[?&]td\b/.test(location.search);
 let START=true, last=performance.now(), T0=performance.now(), stepAcc=0, bellT=25, gullT=5;
 const tmpV=new THREE.Vector3(), _q=new THREE.Quaternion(), _m=new THREE.Matrix4(), _s=new THREE.Vector3();
 let firstIn=false, firstTop=false, firstSand=false, warnT=0;
@@ -1546,7 +1548,7 @@ function step(dt,t){
 }
 let envK=0, miniT=0;
 function loop(now){ requestAnimationFrame(loop); const dt=Math.min(.1,(now-last)/1000); last=now; const t=(now-T0)/1000;
-  if(!START) step(dt,t); else { const a=t*.03+2.2; camera.position.set(Math.cos(a)*430,46+Math.sin(a*.7)*8,Math.sin(a)*430+20); camera.lookAt(0,58,0); const d=window.SUND; sun.position.set(d.x*400,d.y*400,d.z*400); sun.target.position.set(0,0,0); sun.target.updateMatrixWorld(); renderer.shadowMap.needsUpdate=true; tideStep(dt); for(const b of BOATS){ if(!b.m.visible) continue; b.a+=b.v*dt; b.m.position.set(Math.cos(b.a)*b.r,WL-.1,Math.sin(b.a)*b.r*.9); b.m.rotation.y=-b.a+(b.v>0?PI:0); } }
+  if(TD&&window.SekaiTD&&SekaiTD.ready){ SekaiTD.frame(dt,t); if(typeof animWorld==='function') animWorld(dt,t); } else if(!START) step(dt,t); else { const a=t*.03+2.2; camera.position.set(Math.cos(a)*430,46+Math.sin(a*.7)*8,Math.sin(a)*430+20); camera.lookAt(0,58,0); const d=window.SUND; sun.position.set(d.x*400,d.y*400,d.z*400); sun.target.position.set(0,0,0); sun.target.updateMatrixWorld(); renderer.shadowMap.needsUpdate=true; tideStep(dt); for(const b of BOATS){ if(!b.m.visible) continue; b.a+=b.v*dt; b.m.position.set(Math.cos(b.a)*b.r,WL-.1,Math.sin(b.a)*b.r*.9); b.m.rotation.y=-b.a+(b.v>0?PI:0); } }
   if(needRefl>0){ needRefl--; if(needRefl===0) updateRefl(); }
   sky.position.copy(camera.position); STARS.position.copy(camera.position);
   renderer.render(scene,camera);
@@ -1627,6 +1629,21 @@ function navUpdate(dt,t){ if(NAV.i<0) return; const s=SPOTS[NAV.i];
 function navMini(lv,scale,W){ if(NAV.i<0||!NAV.path) return; const L=layerOfY(P.y); mg.strokeStyle='rgba(255,190,80,.95)'; mg.lineWidth=3; mg.setLineDash([5,4]); mg.beginPath(); let on=false;
   for(let k=NAV.k;k<NAV.path.length;k++){ const q=NAV.path[k]; if(q[3]!==L){ on=false; continue; } const x=(q[0]-P.x)*scale+W/2, z=(q[1]-P.z)*scale+W/2; if(on) mg.lineTo(x,z); else { mg.moveTo(x,z); on=true; } } mg.stroke(); mg.setLineDash([]); }
 
+</script>
+<script>
+/* 世界さんぽディフェンスの入口（?td のときだけ。地形・高さ・時代の切り替えをゲームに渡して、defence-castle/world/ を読む） */
+if(TD){
+  $('start').hidden=true;
+  if(typeof setTide==='function'&&typeof tideStep==='function'){ setTide(0,true); tideStep(60); }   /* 潮が引いた干潟を敵が渡ってくる */
+  const GF=typeof groundY==='function'?groundY:typeof groundAt==='function'?((x,z)=>{ const v=groundAt(x,z); return v==null?0:v; }):typeof terrH==='function'?terrH:(()=>0);
+  window.__sekai={THREE,scene,camera,renderer,hemi:typeof hemi!=='undefined'?hemi:null,sun:typeof sun!=='undefined'?sun:null,setEra,setQual:typeof setQual==='function'?setQual:null,
+    groundY:GF,surfaceAt,blocked,
+    hy:(x,z,y)=>{ const g=GF(x,z); const s=surfaceAt(x,z,y==null?g+12:y); return s>-1e8?Math.max(g,s):g; },
+    keep:(typeof sky!=='undefined'?[sky]:[]).concat(typeof TERR!=='undefined'?TERR:[],typeof LAKES!=='undefined'?LAKES:[],typeof WATERS!=='undefined'?WATERS:[],typeof WATER!=='undefined'&&WATER&&WATER.isObject3D?[WATER]:[]),
+    hide:()=>[window.PIM,typeof PIMn!=='undefined'?PIMn:null,typeof PIMp!=='undefined'?PIMp:null].filter(Boolean)};
+  window.TD_MAP='montsaintmichel'; window.TD_GAME_URL='/defence-castle/world/';
+  for(const src of ['/defence-castle/world/stages.js','/defence-castle/world/maps/montsaintmichel.js','/defence-castle/world/td.js']){ const sc=document.createElement('script'); sc.src=src; sc.async=false; document.body.appendChild(sc); }
+}
 </script>
 <!-- sekai-portal:begin（世界さんぽ入口へ戻るボタン・各名所共通。このブロックごと </body> の直前に貼る） -->
 <style>

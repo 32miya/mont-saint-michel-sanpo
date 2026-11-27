@@ -17,3 +17,6 @@
 - seal.png（大天使の印）
 - stained_glass.png（内陣の色ガラスの窓）
 - 人の絵（背景透過PNG・縦長）：p_tour1 / p_tour2 / p_tour3（現代の観光客）、p_guide（干潟のガイド）、p_pilgrim（中世の巡礼者）、p_monk（修道士）、p_soldier（中世の兵士）、p_victorian（19世紀の旅人）、p_guard（看守）、p_prisoner（囚人）
+
+## 世界さんぽディフェンス（`?td`）
+`?td` を付けて開くと、このマップが「世界さんぽディフェンス」（タワー配置型の防衛ゲーム、https://32miya.github.io/defence-castle/world/ ）のステージになります。ゲーム本体は defence-castle リポジトリの `world/` にあり、このページは入口の数行（`TD`）だけを持ちます。
